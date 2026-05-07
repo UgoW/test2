@@ -185,6 +185,11 @@ npm run podman:run
 - `POST /plants/sync`
 - `GET /plants/export`
 - `GET /plants/:id`
+- `GET /locations`
+- `POST /locations`
+- `GET /locations/:id/plants`
+
+Le `POST /plants` attend maintenant un `locationId` existant du user, ce qui permet au front de proposer une liste de localisations avant l'ajout d'une plante.
 
 Tous ces endpoints sont protégés par JWT (`Authorization: Bearer <token>`), sauf `auth/register` et `auth/login`.
 

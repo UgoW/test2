@@ -34,7 +34,7 @@ export class DashboardMetricsService {
         plantId: plant.id,
         plantName: plant.name,
         status: plant.status,
-        location: plant.location,
+        location: plant.location?.name ?? '',
         reasons: this.getAlertReasons(plant),
         lastSync: plant.lastSync,
       }));
@@ -42,7 +42,7 @@ export class DashboardMetricsService {
 
   buildZones(plants: Plant[]) {
     const grouped = plants.reduce<Map<string, Plant[]>>((acc, plant) => {
-      const key = plant.location;
+      const key = plant.location?.name ?? 'Sans localisation';
       const existing = acc.get(key) ?? [];
       existing.push(plant);
       acc.set(key, existing);

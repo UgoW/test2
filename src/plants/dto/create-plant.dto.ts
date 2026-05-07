@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsString, IsUUID, Min } from 'class-validator';
 import { PlantStatus } from '../entities/plant-status.enum';
 
 export class CreatePlantDto {
@@ -26,8 +26,8 @@ export class CreatePlantDto {
   @IsNumber()
   temperature: number;
 
-  @ApiProperty({ example: 'Salon' })
-  @IsString()
+  @ApiProperty({ example: 'd5f4d4ff-6d63-4fd8-8f2f-fcbad3ecf2c1' })
+  @IsUUID()
   @IsNotEmpty()
-  location: string;
+  locationId: string;
 }

@@ -3,12 +3,14 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { PlantHistory } from './plant-history.entity';
+import { Location } from '../../locations/entities/location.entity';
 import { User } from '../../users/entities/user.entity';
 import { PlantStatus } from './plant-status.enum';
 
@@ -32,8 +34,9 @@ export class Plant {
   @Column('float')
   temperature: number;
 
-  @Column()
-  location: string;
+  @ManyToOne(() => Location, (location) => location.plants, { onDelete: 'RESTRICT' })
+  @JoinColumn()
+  location: Location;
 
   @Column({ type: 'datetime' })
   lastSync: Date;

@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Plant } from '../../plants/entities/plant.entity';
+import { Location } from '../../locations/entities/location.entity';
 
 @Entity('users')
 export class User {
@@ -30,4 +31,7 @@ export class User {
 
   @OneToMany(() => Plant, (plant) => plant.user)
   plants: Plant[];
+
+  @OneToMany(() => Location, (location) => location.user)
+  locations: Location[];
 }

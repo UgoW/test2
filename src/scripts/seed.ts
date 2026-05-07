@@ -6,6 +6,7 @@ import { Plant } from '../plants/entities/plant.entity';
 import { PlantHistory } from '../plants/entities/plant-history.entity';
 import { PlantStatus } from '../plants/entities/plant-status.enum';
 import { UserProgress } from '../gamification/entities/user-progress.entity';
+import { Location } from '../locations/entities/location.entity';
 
 const databasePath = process.env.DATABASE_PATH || './data/db.sqlite';
 const seedPassword = process.env.SEED_DEFAULT_PASSWORD || 'StrongPass123!';
@@ -13,7 +14,7 @@ const seedPassword = process.env.SEED_DEFAULT_PASSWORD || 'StrongPass123!';
 const dataSource = new DataSource({
   type: 'sqlite',
   database: databasePath,
-  entities: [User, Plant, PlantHistory, UserProgress],
+  entities: [User, Plant, PlantHistory, UserProgress, Location],
   synchronize: true,
   logging: false,
 });
@@ -248,11 +249,42 @@ async function seed() {
   await dataSource.initialize();
 
   const userRepo = dataSource.getRepository(User);
+  const locationRepo = dataSource.getRepository(Location);
   const plantRepo = dataSource.getRepository(Plant);
   const historyRepo = dataSource.getRepository(PlantHistory);
   const progressRepo = dataSource.getRepository(UserProgress);
 
   const now = Date.now();
+  const locationCache = new Map<string, Location>();
+
+  const getLocation = async (userId: string, name: string) => {
+    const trimmedName = name.trim();
+    const cacheKey = `${userId}:${trimmedName.toLowerCase()}`;
+    const cachedLocation = locationCache.get(cacheKey);
+
+    if (cachedLocation) {
+      return cachedLocation;
+    }
+
+    let location = await locationRepo.findOne({
+      where: {
+        user: { id: userId },
+        name: trimmedName,
+      },
+    });
+
+    if (!location) {
+      location = locationRepo.create({
+        name: trimmedName,
+        user: { id: userId } as User,
+      });
+
+      location = await locationRepo.save(location);
+    }
+
+    locationCache.set(cacheKey, location);
+    return location;
+  };
 
   for (const item of seedUsers) {
     let user = await userRepo.findOne({ where: { email: item.email } });
@@ -320,6 +352,7 @@ async function seed() {
     }
 
     for (const plantData of item.plants) {
+      const location = await getLocation(user.id, plantData.location);
       const existingPlant = await plantRepo.findOne({
         where: {
           name: plantData.name,
@@ -332,7 +365,7 @@ async function seed() {
         existingPlant.humidity = plantData.humidity;
         existingPlant.light = plantData.light;
         existingPlant.temperature = plantData.temperature;
-        existingPlant.location = plantData.location;
+        existingPlant.location = location;
         existingPlant.lastSync = new Date(now - plantData.minutesAgo * 60_000);
 
         await historyRepo
@@ -361,7 +394,7 @@ async function seed() {
         humidity: plantData.humidity,
         light: plantData.light,
         temperature: plantData.temperature,
-        location: plantData.location,
+        location,
         lastSync: new Date(now - plantData.minutesAgo * 60_000),
         user,
         history: plantData.history.map((entry) =>

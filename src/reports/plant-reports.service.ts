@@ -23,7 +23,7 @@ export class PlantReportsService {
         plant.humidity,
         plant.light,
         plant.temperature,
-        plant.location,
+        plant.location?.name ?? '',
         plant.lastSync.toISOString(),
       ];
 

@@ -4,6 +4,7 @@ import { IsNull, Repository } from 'typeorm';
 import { CreatePlantDto } from './dto/create-plant.dto';
 import { ListPlantsQueryDto } from './dto/list-plants-query.dto';
 import { Plant } from './entities/plant.entity';
+import { Location } from '../locations/entities/location.entity';
 import { User } from '../users/entities/user.entity';
 import { SyncService } from '../sync/sync.service';
 import { PlantReportsService } from '../reports/plant-reports.service';
@@ -13,13 +14,31 @@ export class PlantsService {
   constructor(
     @InjectRepository(Plant)
     private readonly plantRepository: Repository<Plant>,
+    @InjectRepository(Location)
+    private readonly locationRepository: Repository<Location>,
     private readonly syncService: SyncService,
     private readonly reportsService: PlantReportsService,
   ) {}
 
   async create(userId: string, createPlantDto: CreatePlantDto) {
+    const location = await this.locationRepository.findOne({
+      where: {
+        id: createPlantDto.locationId,
+        user: { id: userId },
+      },
+    });
+
+    if (!location) {
+      throw new NotFoundException('Location not found');
+    }
+
     const plant = this.plantRepository.create({
-      ...createPlantDto,
+      name: createPlantDto.name,
+      status: createPlantDto.status,
+      humidity: createPlantDto.humidity,
+      light: createPlantDto.light,
+      temperature: createPlantDto.temperature,
+      location,
       lastSync: new Date(),
       user: { id: userId } as User,
       history: [],
@@ -38,15 +57,19 @@ export class PlantsService {
       qb.andWhere('plant.status = :status', { status: filters.status });
     }
 
+    if (filters.locationId) {
+      qb.andWhere('location.id = :locationId', { locationId: filters.locationId });
+    }
+
     if (filters.location) {
-      qb.andWhere('LOWER(plant.location) = LOWER(:location)', {
+      qb.andWhere('LOWER(location.name) = LOWER(:location)', {
         location: filters.location,
       });
     }
 
     if (filters.search) {
       qb.andWhere(
-        '(LOWER(plant.name) LIKE LOWER(:search) OR LOWER(plant.location) LIKE LOWER(:search))',
+        '(LOWER(plant.name) LIKE LOWER(:search) OR LOWER(location.name) LIKE LOWER(:search))',
         { search: `%${filters.search}%` },
       );
     }
@@ -76,7 +99,7 @@ export class PlantsService {
   async findOne(userId: string, id: string) {
     const plant = await this.plantRepository.findOne({
       where: { id, user: { id: userId }, deletedAt: IsNull() },
-      relations: ['history'],
+      relations: ['history', 'location'],
     });
 
     if (!plant) {
@@ -113,6 +136,7 @@ export class PlantsService {
     return this.plantRepository
       .createQueryBuilder('plant')
       .leftJoinAndSelect('plant.history', 'history')
+      .leftJoinAndSelect('plant.location', 'location')
       .leftJoin('plant.user', 'user')
       .where('user.id = :userId', { userId })
       .andWhere('plant.deletedAt IS NULL');

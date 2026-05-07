@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigModule } from './config/config.module';
 import { AuthModule } from './auth/auth.module';
+import { LocationsModule } from './locations/locations.module';
 import { PlantsModule } from './plants/plants.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
@@ -24,6 +25,7 @@ import { GamificationModule } from './gamification/gamification.module';
     }),
     AuthModule,
     UsersModule,
+    LocationsModule,
     PlantsModule,
     DashboardModule,
     GamificationModule,

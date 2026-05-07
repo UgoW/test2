@@ -1,10 +1,21 @@
 import { DashboardMetricsService } from './dashboard-metrics.service';
 import { Plant } from '../plants/entities/plant.entity';
 import { PlantStatus } from '../plants/entities/plant-status.enum';
+import { Location } from '../locations/entities/location.entity';
 
 describe('DashboardMetricsService', () => {
   let service: DashboardMetricsService;
   let seed = 0;
+
+  const makeLocation = (name = 'Salon'): Location =>
+    ({
+      id: 'location-1',
+      name,
+      user: undefined as any,
+      plants: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }) as Location;
 
   const makePlant = (overrides: Partial<Plant>): Plant =>
     ({
@@ -14,7 +25,7 @@ describe('DashboardMetricsService', () => {
       humidity: 50,
       light: 500,
       temperature: 22,
-      location: 'Salon',
+      location: makeLocation(),
       lastSync: new Date('2026-04-20T10:00:00.000Z'),
       history: [],
       user: undefined as any,
@@ -73,9 +84,9 @@ describe('DashboardMetricsService', () => {
 
   it('should aggregate zone stats and infer globalStatus', () => {
     const plants = [
-      makePlant({ location: 'Salon', status: PlantStatus.OK }),
-      makePlant({ location: 'Salon', status: PlantStatus.ATTENTION }),
-      makePlant({ location: 'Terrasse', status: PlantStatus.CRITICAL }),
+      makePlant({ location: makeLocation('Salon'), status: PlantStatus.OK }),
+      makePlant({ location: makeLocation('Salon'), status: PlantStatus.ATTENTION }),
+      makePlant({ location: makeLocation('Terrasse'), status: PlantStatus.CRITICAL }),
     ];
 
     const zones = service.buildZones(plants);
