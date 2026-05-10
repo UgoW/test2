@@ -1,0 +1,36 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - app-network
+    environment:
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: back-jardin-magique
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    networks:
+      - app-network
+    depends_on:
+      - ollama
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  ollama-data:

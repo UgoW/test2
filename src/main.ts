@@ -30,7 +30,11 @@ async function bootstrap() {
     .setTitle('Jardin Magique API')
     .setDescription('Backend API pour la gestion des utilisateurs et des plantes')
     .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }, 'access-token')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+    })    
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

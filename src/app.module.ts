@@ -1,3 +1,4 @@
+import 'node:crypto';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -8,6 +9,7 @@ import { PlantsModule } from './plants/plants.module';
 import { UsersModule } from './users/users.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { GamificationModule } from './gamification/gamification.module';
+import { PlantAdvisorModule } from './plant-advisor/plant-advisor.module';
 
 @Module({
   imports: [
@@ -29,6 +31,7 @@ import { GamificationModule } from './gamification/gamification.module';
     PlantsModule,
     DashboardModule,
     GamificationModule,
+    PlantAdvisorModule,
   ],
 })
 export class AppModule {}
